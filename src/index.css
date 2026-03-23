@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --map-default: #E5E7EB;
+  --map-stroke: #fff;
+}
+
+.dark {
+  --map-default: #374151;
+  --map-stroke: #1f2937;
+}

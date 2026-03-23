@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
-import type { Region, Word } from "../data/regions";
+import type { Region } from "../data/regions";
+import type { Word } from "../data/regions";
 
 interface QuizProps {
   region: Region;
@@ -119,10 +120,10 @@ export default function Quiz({ region, onBack, onComplete }: QuizProps) {
     const percent = Math.round((score / total) * 100);
     const emoji = percent >= 80 ? "🎉" : percent >= 50 ? "👍" : "💪";
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-sm w-full">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center max-w-sm w-full">
           <div className="text-5xl mb-4">{emoji}</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">測驗完成！</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">測驗完成！</h2>
           <p className="text-gray-600 mb-1">
             {region.name} 地區測驗
           </p>
@@ -135,7 +136,7 @@ export default function Quiz({ region, onBack, onComplete }: QuizProps) {
           <div className="flex gap-3">
             <button
               onClick={onBack}
-              className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50"
+              className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               返回
             </button>
@@ -164,7 +165,7 @@ export default function Quiz({ region, onBack, onComplete }: QuizProps) {
         return (
           <div>
             <p className="text-sm text-gray-500 mb-2">這個日文是什麼意思？</p>
-            <p className="text-3xl font-bold text-gray-800">{question.word.japanese}</p>
+            <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">{question.word.japanese}</p>
             <p className="text-sm text-gray-400 mt-1">{question.word.hiragana}</p>
           </div>
         );
@@ -172,7 +173,7 @@ export default function Quiz({ region, onBack, onComplete }: QuizProps) {
         return (
           <div>
             <p className="text-sm text-gray-500 mb-2">「{question.word.chinese}」的日文是？</p>
-            <p className="text-3xl font-bold text-gray-800">{question.word.chinese}</p>
+            <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">{question.word.chinese}</p>
           </div>
         );
       case "listen-romaji":
@@ -186,9 +187,9 @@ export default function Quiz({ region, onBack, onComplete }: QuizProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-4 py-3">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <button
             onClick={onBack}
@@ -207,7 +208,7 @@ export default function Quiz({ region, onBack, onComplete }: QuizProps) {
         </div>
         {/* Progress */}
         <div className="max-w-lg mx-auto mt-2">
-          <div className="bg-gray-100 rounded-full h-1.5">
+          <div className="bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
             <div
               className="rounded-full h-1.5 transition-all duration-300"
               style={{
@@ -221,7 +222,7 @@ export default function Quiz({ region, onBack, onComplete }: QuizProps) {
 
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* Question */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-6 text-center">
           <span
             className="inline-block px-3 py-1 rounded-full text-xs font-medium text-white mb-4"
             style={{ backgroundColor: region.color }}
@@ -234,7 +235,7 @@ export default function Quiz({ region, onBack, onComplete }: QuizProps) {
         {/* Options */}
         <div className="grid gap-3">
           {question.options.map((opt, idx) => {
-            let bg = "bg-white border-gray-200 hover:border-gray-300";
+            let bg = "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:border-gray-300";
             if (answered) {
               if (idx === question.correctIndex) {
                 bg = "bg-green-50 border-green-400 text-green-800";
@@ -262,7 +263,7 @@ export default function Quiz({ region, onBack, onComplete }: QuizProps) {
 
         {/* Answer explanation */}
         {answered && (
-          <div className="mt-4 bg-white rounded-xl p-4 border border-gray-100">
+          <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
             <p className="text-sm text-gray-600">
               <span className="font-bold">{question.word.japanese}</span>
               （{question.word.hiragana}）= {question.word.chinese}

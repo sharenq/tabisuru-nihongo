@@ -14,26 +14,25 @@ export default function RegionList({ onRegionClick, getRegionProgress }: RegionL
           <button
             key={region.id}
             onClick={() => onRegionClick(region.id)}
-            className="flex items-center gap-4 bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow text-left"
+            className="flex items-center gap-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow text-left"
           >
             <div
-              className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg shrink-0 relative"
+              className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg shrink-0"
               style={{ backgroundColor: region.color }}
             >
               {region.name[0]}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="font-bold text-gray-800">
+              <div className="font-bold text-gray-800 dark:text-gray-100">
                 {region.name}
                 <span className="text-sm font-normal text-gray-400 ml-2">
                   {region.nameJa}
                 </span>
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 {region.words.length} 個單字 · {region.prefectures.join("、")}
               </div>
-              {/* Progress bar */}
-              <div className="mt-1.5 bg-gray-100 rounded-full h-1.5">
+              <div className="mt-1.5 bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
                 <div
                   className="rounded-full h-1.5 transition-all duration-300"
                   style={{
@@ -47,7 +46,7 @@ export default function RegionList({ onRegionClick, getRegionProgress }: RegionL
               </div>
             </div>
             <svg
-              className="w-5 h-5 text-gray-300 shrink-0 ml-auto"
+              className="w-5 h-5 text-gray-300 dark:text-gray-600 shrink-0 ml-auto"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

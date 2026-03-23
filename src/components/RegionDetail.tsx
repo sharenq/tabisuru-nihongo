@@ -3,6 +3,7 @@ import type { Region } from "../data/regions";
 import { categories } from "../data/regions";
 import WordCard from "./WordCard";
 import SearchBar from "./SearchBar";
+import { useSpeech } from "../hooks/useSpeech";
 
 interface RegionDetailProps {
   region: Region;
@@ -25,6 +26,7 @@ export default function RegionDetail({
 }: RegionDetailProps) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
+  const { speak, isSupported } = useSpeech();
 
   const filteredWords = region.words.filter((w) => {
     const matchCategory =
@@ -43,7 +45,7 @@ export default function RegionDetail({
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <div
         className="text-white px-4 pt-6 pb-8"
@@ -88,13 +90,13 @@ export default function RegionDetail({
 
       <div className="px-4 -mt-4">
         {/* Features */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
-          <h2 className="text-sm font-semibold text-gray-500 mb-2">當地特色</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-4">
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">當地特色</h2>
           <div className="flex flex-wrap gap-2">
             {region.features.map((f) => (
               <span
                 key={f}
-                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm"
               >
                 {f}
               </span>
@@ -103,17 +105,17 @@ export default function RegionDetail({
         </div>
 
         {/* Prefectures */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
-          <h2 className="text-sm font-semibold text-gray-500 mb-2">包含地區</h2>
-          <p className="text-gray-700 text-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-4">
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">包含地區</h2>
+          <p className="text-gray-700 dark:text-gray-300 text-sm">
             {region.prefectures.join("、")}
           </p>
         </div>
 
         {/* Quiz section */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-500">測驗</h2>
+            <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400">測驗</h2>
             {quizScores.length > 0 && (
               <span className="text-xs text-gray-400">
                 最近: {quizScores[quizScores.length - 1].correct}/
@@ -132,9 +134,9 @@ export default function RegionDetail({
               {quizScores.slice(-5).map((s, i) => (
                 <div
                   key={i}
-                  className="flex-shrink-0 text-center px-3 py-1.5 bg-gray-50 rounded-lg"
+                  className="flex-shrink-0 text-center px-3 py-1.5 bg-gray-50 dark:bg-gray-700 rounded-lg"
                 >
-                  <div className="text-sm font-bold text-gray-700">
+                  <div className="text-sm font-bold text-gray-700 dark:text-gray-200">
                     {Math.round((s.correct / s.total) * 100)}%
                   </div>
                   <div className="text-xs text-gray-400">
@@ -160,8 +162,8 @@ export default function RegionDetail({
               onClick={() => setSelectedCategory(cat.id)}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
                 selectedCategory === cat.id
-                  ? "bg-gray-800 text-white"
-                  : "bg-white text-gray-600 border border-gray-200"
+                  ? "bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800"
+                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
               }`}
             >
               <span>{cat.icon}</span>
@@ -178,6 +180,7 @@ export default function RegionDetail({
               word={word}
               learned={isLearned(region.id, word.japanese)}
               onToggleLearned={() => toggleLearned(region.id, word.japanese)}
+              onSpeak={isSupported ? speak : undefined}
             />
           ))}
         </div>
