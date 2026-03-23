@@ -2,21 +2,44 @@ import { useState } from "react";
 import JapanMap from "./components/JapanMap";
 import RegionDetail from "./components/RegionDetail";
 import RegionList from "./components/RegionList";
+import Quiz from "./components/Quiz";
 import { regions } from "./data/regions";
 import { useProgress } from "./hooks/useProgress";
 
-type View = { type: "home" } | { type: "region"; id: string } | { type: "quiz"; id: string };
+type View =
+  | { type: "home" }
+  | { type: "region"; id: string }
+  | { type: "quiz"; id: string };
 
 function App() {
   const [view, setView] = useState<View>({ type: "home" });
-  const { toggleLearned, isLearned, getRegionProgress, totalLearned } =
-    useProgress();
+  const {
+    toggleLearned,
+    isLearned,
+    getRegionProgress,
+    addQuizScore,
+    getQuizScores,
+    totalLearned,
+  } = useProgress();
 
   const totalWords = regions.reduce((sum, r) => sum + r.words.length, 0);
+
+  if (view.type === "quiz") {
+    const region = regions.find((r) => r.id === view.id);
+    if (!region) return null;
+    return (
+      <Quiz
+        region={region}
+        onBack={() => setView({ type: "region", id: view.id })}
+        onComplete={(correct, total) => addQuizScore(view.id, correct, total)}
+      />
+    );
+  }
 
   if (view.type === "region") {
     const region = regions.find((r) => r.id === view.id);
     if (!region) return null;
+    const scores = getQuizScores(region.id);
     return (
       <RegionDetail
         region={region}
@@ -25,14 +48,9 @@ function App() {
         isLearned={isLearned}
         toggleLearned={toggleLearned}
         regionProgress={getRegionProgress(region.id, region.words.length)}
+        quizScores={scores}
       />
     );
-  }
-
-  if (view.type === "quiz") {
-    // Placeholder - will be implemented in Phase 3
-    setView({ type: "region", id: view.id });
-    return null;
   }
 
   return (

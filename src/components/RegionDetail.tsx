@@ -11,6 +11,7 @@ interface RegionDetailProps {
   isLearned: (regionId: string, japanese: string) => boolean;
   toggleLearned: (regionId: string, japanese: string) => void;
   regionProgress: { count: number; total: number; percent: number };
+  quizScores?: { correct: number; total: number; date: string }[];
 }
 
 export default function RegionDetail({
@@ -20,6 +21,7 @@ export default function RegionDetail({
   isLearned,
   toggleLearned,
   regionProgress,
+  quizScores = [],
 }: RegionDetailProps) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
@@ -108,13 +110,44 @@ export default function RegionDetail({
           </p>
         </div>
 
-        {/* Quiz button */}
-        <button
-          onClick={onStartQuiz}
-          className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl py-3 font-semibold shadow-sm hover:shadow-md transition-shadow mb-4"
-        >
-          開始測驗
-        </button>
+        {/* Quiz section */}
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-500">測驗</h2>
+            {quizScores.length > 0 && (
+              <span className="text-xs text-gray-400">
+                最近: {quizScores[quizScores.length - 1].correct}/
+                {quizScores[quizScores.length - 1].total}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={onStartQuiz}
+            className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl py-3 font-semibold shadow-sm hover:shadow-md transition-shadow"
+          >
+            {quizScores.length > 0 ? "再測一次" : "開始測驗"}
+          </button>
+          {quizScores.length > 0 && (
+            <div className="mt-3 flex gap-2 overflow-x-auto">
+              {quizScores.slice(-5).map((s, i) => (
+                <div
+                  key={i}
+                  className="flex-shrink-0 text-center px-3 py-1.5 bg-gray-50 rounded-lg"
+                >
+                  <div className="text-sm font-bold text-gray-700">
+                    {Math.round((s.correct / s.total) * 100)}%
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {new Date(s.date).toLocaleDateString("zh-TW", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Search */}
         <SearchBar value={search} onChange={setSearch} />
