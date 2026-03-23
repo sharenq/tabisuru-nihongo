@@ -2,19 +2,39 @@ import { useState } from "react";
 import type { Region } from "../data/regions";
 import { categories } from "../data/regions";
 import WordCard from "./WordCard";
+import SearchBar from "./SearchBar";
 
 interface RegionDetailProps {
   region: Region;
   onBack: () => void;
+  onStartQuiz: () => void;
+  isLearned: (regionId: string, japanese: string) => boolean;
+  toggleLearned: (regionId: string, japanese: string) => void;
+  regionProgress: { count: number; total: number; percent: number };
 }
 
-export default function RegionDetail({ region, onBack }: RegionDetailProps) {
+export default function RegionDetail({
+  region,
+  onBack,
+  onStartQuiz,
+  isLearned,
+  toggleLearned,
+  regionProgress,
+}: RegionDetailProps) {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [search, setSearch] = useState("");
 
-  const filteredWords =
-    selectedCategory === "all"
-      ? region.words
-      : region.words.filter((w) => w.category === selectedCategory);
+  const filteredWords = region.words.filter((w) => {
+    const matchCategory =
+      selectedCategory === "all" || w.category === selectedCategory;
+    const matchSearch =
+      !search ||
+      w.japanese.includes(search) ||
+      w.hiragana.includes(search) ||
+      w.chinese.includes(search) ||
+      w.romaji.toLowerCase().includes(search.toLowerCase());
+    return matchCategory && matchSearch;
+  });
 
   const availableCategories = categories.filter(
     (c) => c.id === "all" || region.words.some((w) => w.category === c.id)
@@ -36,15 +56,32 @@ export default function RegionDetail({ region, onBack }: RegionDetailProps) {
           </svg>
           返回地圖
         </button>
-        <h1 className="text-3xl font-bold mb-1">
-          {region.name}
-          <span className="text-lg font-normal ml-2 opacity-80">
-            {region.nameJa}
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-1">
+              {region.name}
+              <span className="text-lg font-normal ml-2 opacity-80">
+                {region.nameJa}
+              </span>
+            </h1>
+            <p className="text-sm opacity-90 leading-relaxed mt-2">
+              {region.description}
+            </p>
+          </div>
+        </div>
+        {/* Progress bar */}
+        <div className="mt-4 bg-white/20 rounded-full h-2">
+          <div
+            className="bg-white rounded-full h-2 transition-all duration-300"
+            style={{ width: `${regionProgress.percent}%` }}
+          />
+        </div>
+        <div className="flex justify-between mt-1">
+          <span className="text-xs opacity-80">
+            已學會 {regionProgress.count}/{regionProgress.total} 個單字
           </span>
-        </h1>
-        <p className="text-sm opacity-90 leading-relaxed mt-2">
-          {region.description}
-        </p>
+          <span className="text-xs opacity-80">{regionProgress.percent}%</span>
+        </div>
       </div>
 
       <div className="px-4 -mt-4">
@@ -66,8 +103,21 @@ export default function RegionDetail({ region, onBack }: RegionDetailProps) {
         {/* Prefectures */}
         <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
           <h2 className="text-sm font-semibold text-gray-500 mb-2">包含地區</h2>
-          <p className="text-gray-700 text-sm">{region.prefectures.join("、")}</p>
+          <p className="text-gray-700 text-sm">
+            {region.prefectures.join("、")}
+          </p>
         </div>
+
+        {/* Quiz button */}
+        <button
+          onClick={onStartQuiz}
+          className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl py-3 font-semibold shadow-sm hover:shadow-md transition-shadow mb-4"
+        >
+          開始測驗
+        </button>
+
+        {/* Search */}
+        <SearchBar value={search} onChange={setSearch} />
 
         {/* Category Filter */}
         <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
@@ -90,13 +140,18 @@ export default function RegionDetail({ region, onBack }: RegionDetailProps) {
         {/* Word Cards */}
         <div className="grid grid-cols-2 gap-3 pb-8">
           {filteredWords.map((word) => (
-            <WordCard key={word.japanese} word={word} />
+            <WordCard
+              key={word.japanese}
+              word={word}
+              learned={isLearned(region.id, word.japanese)}
+              onToggleLearned={() => toggleLearned(region.id, word.japanese)}
+            />
           ))}
         </div>
 
         {filteredWords.length === 0 && (
           <div className="text-center text-gray-400 py-12">
-            此分類暫無單字
+            {search ? "找不到相關單字" : "此分類暫無單字"}
           </div>
         )}
       </div>

@@ -3,19 +3,36 @@ import JapanMap from "./components/JapanMap";
 import RegionDetail from "./components/RegionDetail";
 import RegionList from "./components/RegionList";
 import { regions } from "./data/regions";
+import { useProgress } from "./hooks/useProgress";
+
+type View = { type: "home" } | { type: "region"; id: string } | { type: "quiz"; id: string };
 
 function App() {
-  const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
+  const [view, setView] = useState<View>({ type: "home" });
+  const { toggleLearned, isLearned, getRegionProgress, totalLearned } =
+    useProgress();
 
-  const selectedRegion = regions.find((r) => r.id === selectedRegionId) ?? null;
+  const totalWords = regions.reduce((sum, r) => sum + r.words.length, 0);
 
-  if (selectedRegion) {
+  if (view.type === "region") {
+    const region = regions.find((r) => r.id === view.id);
+    if (!region) return null;
     return (
       <RegionDetail
-        region={selectedRegion}
-        onBack={() => setSelectedRegionId(null)}
+        region={region}
+        onBack={() => setView({ type: "home" })}
+        onStartQuiz={() => setView({ type: "quiz", id: view.id })}
+        isLearned={isLearned}
+        toggleLearned={toggleLearned}
+        regionProgress={getRegionProgress(region.id, region.words.length)}
       />
     );
+  }
+
+  if (view.type === "quiz") {
+    // Placeholder - will be implemented in Phase 3
+    setView({ type: "region", id: view.id });
+    return null;
   }
 
   return (
@@ -28,6 +45,23 @@ function App() {
         <p className="text-sm text-gray-500 text-center mt-1">
           點擊地圖或選擇地區，學習旅遊日文
         </p>
+        {/* Overall progress */}
+        <div className="max-w-xs mx-auto mt-3">
+          <div className="flex justify-between text-xs text-gray-400 mb-1">
+            <span>總學習進度</span>
+            <span>
+              {totalLearned}/{totalWords} 單字
+            </span>
+          </div>
+          <div className="bg-gray-100 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full h-2 transition-all duration-300"
+              style={{
+                width: `${totalWords > 0 ? Math.round((totalLearned / totalWords) * 100) : 0}%`,
+              }}
+            />
+          </div>
+        </div>
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-6">
@@ -37,14 +71,17 @@ function App() {
             日本地圖
           </h2>
           <JapanMap
-            onRegionClick={setSelectedRegionId}
-            selectedRegion={selectedRegionId}
+            onRegionClick={(id) => setView({ type: "region", id })}
+            selectedRegion={null}
           />
         </div>
 
         {/* Region List */}
         <h2 className="text-sm font-semibold text-gray-500 mb-3">全部地區</h2>
-        <RegionList onRegionClick={setSelectedRegionId} />
+        <RegionList
+          onRegionClick={(id) => setView({ type: "region", id })}
+          getRegionProgress={getRegionProgress}
+        />
 
         {/* Footer */}
         <footer className="text-center text-xs text-gray-400 mt-8 pb-6">
