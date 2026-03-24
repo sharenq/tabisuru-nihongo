@@ -1,6 +1,7 @@
 import { useState } from "react";
 import JapanMap from "./components/JapanMap";
 import RegionDetail from "./components/RegionDetail";
+import PrefectureDetail from "./components/PrefectureDetail";
 import RegionList from "./components/RegionList";
 import Quiz from "./components/Quiz";
 import { regions } from "./data/regions";
@@ -10,7 +11,12 @@ import { useDarkMode } from "./hooks/useDarkMode";
 type View =
   | { type: "home" }
   | { type: "region"; id: string }
-  | { type: "quiz"; id: string };
+  | { type: "prefecture"; regionId: string; prefId: string }
+  | { type: "quiz"; regionId: string; prefId: string };
+
+function getAllWords() {
+  return regions.flatMap((r) => r.prefectures.flatMap((p) => p.words));
+}
 
 function App() {
   const [view, setView] = useState<View>({ type: "home" });
@@ -24,16 +30,43 @@ function App() {
   } = useProgress();
   const { isDark, toggle: toggleDark } = useDarkMode();
 
-  const totalWords = regions.reduce((sum, r) => sum + r.words.length, 0);
+  const totalWords = getAllWords().length;
 
   if (view.type === "quiz") {
-    const region = regions.find((r) => r.id === view.id);
-    if (!region) return null;
+    const region = regions.find((r) => r.id === view.regionId);
+    const pref = region?.prefectures.find((p) => p.id === view.prefId);
+    if (!region || !pref) return null;
     return (
       <Quiz
-        region={region}
-        onBack={() => setView({ type: "region", id: view.id })}
-        onComplete={(correct, total) => addQuizScore(view.id, correct, total)}
+        prefecture={pref}
+        regionColor={region.color}
+        onBack={() =>
+          setView({ type: "prefecture", regionId: view.regionId, prefId: view.prefId })
+        }
+        onComplete={(correct, total) =>
+          addQuizScore(view.prefId, correct, total)
+        }
+      />
+    );
+  }
+
+  if (view.type === "prefecture") {
+    const region = regions.find((r) => r.id === view.regionId);
+    const pref = region?.prefectures.find((p) => p.id === view.prefId);
+    if (!region || !pref) return null;
+    const scores = getQuizScores(pref.id);
+    return (
+      <PrefectureDetail
+        prefecture={pref}
+        regionColor={region.color}
+        onBack={() => setView({ type: "region", id: view.regionId })}
+        onStartQuiz={() =>
+          setView({ type: "quiz", regionId: view.regionId, prefId: view.prefId })
+        }
+        isLearned={isLearned}
+        toggleLearned={toggleLearned}
+        progress={getRegionProgress(pref.id, pref.words.length)}
+        quizScores={scores}
       />
     );
   }
@@ -41,16 +74,14 @@ function App() {
   if (view.type === "region") {
     const region = regions.find((r) => r.id === view.id);
     if (!region) return null;
-    const scores = getQuizScores(region.id);
     return (
       <RegionDetail
         region={region}
         onBack={() => setView({ type: "home" })}
-        onStartQuiz={() => setView({ type: "quiz", id: view.id })}
-        isLearned={isLearned}
-        toggleLearned={toggleLearned}
-        regionProgress={getRegionProgress(region.id, region.words.length)}
-        quizScores={scores}
+        onPrefectureClick={(prefId) =>
+          setView({ type: "prefecture", regionId: view.id, prefId })
+        }
+        getRegionProgress={getRegionProgress}
       />
     );
   }
@@ -69,7 +100,6 @@ function App() {
               點擊地圖或選擇地區，學習旅遊日文
             </p>
           </div>
-          {/* Dark mode toggle */}
           <button
             onClick={toggleDark}
             className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -86,7 +116,6 @@ function App() {
             )}
           </button>
         </div>
-        {/* Overall progress */}
         <div className="max-w-xs mx-auto mt-3">
           <div className="flex justify-between text-xs text-gray-400 mb-1">
             <span>總學習進度</span>
@@ -106,7 +135,6 @@ function App() {
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-6">
-        {/* Map Section */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
           <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 text-center">
             日本地圖
@@ -117,14 +145,12 @@ function App() {
           />
         </div>
 
-        {/* Region List */}
         <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">全部地區</h2>
         <RegionList
           onRegionClick={(id) => setView({ type: "region", id })}
           getRegionProgress={getRegionProgress}
         />
 
-        {/* Footer */}
         <footer className="text-center text-xs text-gray-400 mt-8 pb-6">
           旅する日本語 — 邊旅行邊學日文
         </footer>
