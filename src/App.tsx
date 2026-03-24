@@ -140,8 +140,9 @@ function App() {
             日本地圖
           </h2>
           <JapanMap
-            onRegionClick={(id) => setView({ type: "region", id })}
-            selectedRegion={null}
+            onPrefectureClick={(regionId, prefId) =>
+              setView({ type: "prefecture", regionId, prefId })
+            }
           />
         </div>
 

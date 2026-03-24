@@ -1,120 +1,180 @@
-import { regions } from "../data/regions";
+import { useEffect, useRef, useState } from "react";
+
+// SVG prefecture ID → our prefecture ID
+const svgIdToOurId: Record<string, string> = {
+  JP01: "hokkaido",
+  JP02: "aomori",
+  JP03: "iwate",
+  JP04: "miyagi",
+  JP05: "akita",
+  JP06: "yamagata",
+  JP07: "fukushima",
+  JP08: "ibaraki",
+  JP09: "tochigi",
+  JP10: "gunma",
+  JP11: "saitama",
+  JP12: "chiba",
+  JP13: "tokyo",
+  JP14: "kanagawa",
+  JP15: "niigata",
+  JP16: "toyama",
+  JP17: "ishikawa",
+  JP18: "fukui",
+  JP19: "yamanashi",
+  JP20: "nagano",
+  JP21: "gifu",
+  JP22: "shizuoka",
+  JP23: "aichi",
+  JP24: "mie",
+  JP25: "shiga",
+  JP26: "kyoto",
+  JP27: "osaka",
+  JP28: "hyogo",
+  JP29: "nara",
+  JP30: "wakayama",
+  JP31: "tottori",
+  JP32: "shimane",
+  JP33: "okayama",
+  JP34: "hiroshima",
+  JP35: "yamaguchi",
+  JP36: "tokushima",
+  JP37: "kagawa",
+  JP38: "ehime",
+  JP39: "kochi",
+  JP40: "fukuoka",
+  JP41: "saga",
+  JP42: "nagasaki",
+  JP43: "kumamoto",
+  JP44: "oita",
+  JP45: "miyazaki",
+  JP46: "kagoshima",
+  JP47: "okinawa",
+};
+
+// Our prefecture ID → region ID
+const prefToRegion: Record<string, string> = {
+  hokkaido: "hokkaido",
+  aomori: "tohoku", iwate: "tohoku", miyagi: "tohoku", akita: "tohoku", yamagata: "tohoku", fukushima: "tohoku",
+  tokyo: "kanto", kanagawa: "kanto", chiba: "kanto", saitama: "kanto", tochigi: "kanto", gunma: "kanto", ibaraki: "kanto",
+  aichi: "chubu", shizuoka: "chubu", yamanashi: "chubu", nagano: "chubu", niigata: "chubu", toyama: "chubu", ishikawa: "chubu", fukui: "chubu", gifu: "chubu",
+  kyoto: "kinki", osaka: "kinki", nara: "kinki", hyogo: "kinki", shiga: "kinki", mie: "kinki", wakayama: "kinki",
+  hiroshima: "chugoku", okayama: "chugoku", shimane: "chugoku", tottori: "chugoku", yamaguchi: "chugoku",
+  ehime: "shikoku", kagawa: "shikoku", tokushima: "shikoku", kochi: "shikoku",
+  fukuoka: "kyushu", saga: "kyushu", nagasaki: "kyushu", kumamoto: "kyushu", oita: "kyushu", miyazaki: "kyushu", kagoshima: "kyushu", okinawa: "kyushu",
+};
+
+// Region colors from our data
+const regionColors: Record<string, string> = {
+  hokkaido: "#3B82F6",
+  tohoku: "#8B5CF6",
+  kanto: "#EF4444",
+  chubu: "#F59E0B",
+  kinki: "#EC4899",
+  chugoku: "#10B981",
+  shikoku: "#6366F1",
+  kyushu: "#F97316",
+};
 
 interface JapanMapProps {
-  onRegionClick: (regionId: string) => void;
-  selectedRegion: string | null;
+  onPrefectureClick: (regionId: string, prefId: string) => void;
 }
 
-export default function JapanMap({ onRegionClick, selectedRegion }: JapanMapProps) {
-  const defaultFill = "var(--map-default, #E5E7EB)";
+export default function JapanMap({ onPrefectureClick }: JapanMapProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [, setHoveredPref] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<{ text: string; x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const obj = container.querySelector("object") as HTMLObjectElement | null;
+    if (!obj) return;
+
+    const setup = () => {
+      const svgDoc = obj.contentDocument;
+      if (!svgDoc) return;
+
+      const svgEl = svgDoc.querySelector("svg");
+      if (svgEl) {
+        svgEl.style.width = "100%";
+        svgEl.style.height = "auto";
+      }
+
+      // Style all prefecture paths
+      for (const [svgId, ourId] of Object.entries(svgIdToOurId)) {
+        const path = svgDoc.getElementById(svgId);
+        if (!path) continue;
+
+        const regionId = prefToRegion[ourId];
+        const color = regionColors[regionId] || "#6f9c76";
+
+        path.style.fill = color;
+        path.style.opacity = "0.7";
+        path.style.cursor = "pointer";
+        path.style.transition = "opacity 0.2s, fill 0.15s";
+
+        path.addEventListener("mouseenter", (e) => {
+          path.style.opacity = "1";
+          path.style.fill = color;
+          setHoveredPref(ourId);
+          const name = path.getAttribute("name") || ourId;
+          const rect = container.getBoundingClientRect();
+          const ev = e as MouseEvent;
+          setTooltip({
+            text: name,
+            x: ev.clientX - rect.left,
+            y: ev.clientY - rect.top - 30,
+          });
+        });
+
+        path.addEventListener("mousemove", (e) => {
+          const rect = container.getBoundingClientRect();
+          const ev = e as MouseEvent;
+          setTooltip((prev) =>
+            prev ? { ...prev, x: ev.clientX - rect.left, y: ev.clientY - rect.top - 30 } : prev
+          );
+        });
+
+        path.addEventListener("mouseleave", () => {
+          path.style.opacity = "0.7";
+          setHoveredPref(null);
+          setTooltip(null);
+        });
+
+        path.addEventListener("click", () => {
+          const regionId = prefToRegion[ourId];
+          if (regionId) {
+            onPrefectureClick(regionId, ourId);
+          }
+        });
+      }
+    };
+
+    if (obj.contentDocument?.querySelector("svg")) {
+      setup();
+    } else {
+      obj.addEventListener("load", setup);
+      return () => obj.removeEventListener("load", setup);
+    }
+  }, [onPrefectureClick]);
 
   return (
-    <svg viewBox="0 0 500 700" className="w-full max-w-md mx-auto">
-      {/* Hokkaido */}
-      <g onClick={() => onRegionClick("hokkaido")} className="cursor-pointer">
-        <path
-          d="M320,30 L370,25 L400,40 L410,70 L400,100 L380,120 L350,130 L320,120 L300,100 L290,70 L300,45 Z"
-          fill={selectedRegion === "hokkaido" ? regions[0].color : defaultFill}
-          stroke="var(--map-stroke, #fff)"
-          strokeWidth="2"
-          className="transition-colors duration-200 hover:opacity-80"
-        />
-        <text x="350" y="80" textAnchor="middle" className="text-xs pointer-events-none font-bold fill-gray-700 dark:fill-gray-300">北海道</text>
-      </g>
-
-      {/* Tohoku */}
-      <g onClick={() => onRegionClick("tohoku")} className="cursor-pointer">
-        <path
-          d="M310,150 L350,140 L370,160 L375,200 L365,240 L340,260 L310,265 L290,250 L280,220 L285,180 Z"
-          fill={selectedRegion === "tohoku" ? regions[1].color : defaultFill}
-          stroke="var(--map-stroke, #fff)"
-          strokeWidth="2"
-          className="transition-colors duration-200 hover:opacity-80"
-        />
-        <text x="330" y="205" textAnchor="middle" className="text-xs pointer-events-none font-bold fill-gray-700 dark:fill-gray-300">東北</text>
-      </g>
-
-      {/* Kanto */}
-      <g onClick={() => onRegionClick("kanto")} className="cursor-pointer">
-        <path
-          d="M295,270 L340,268 L360,280 L365,310 L350,335 L320,345 L290,335 L275,310 L280,285 Z"
-          fill={selectedRegion === "kanto" ? regions[2].color : defaultFill}
-          stroke="var(--map-stroke, #fff)"
-          strokeWidth="2"
-          className="transition-colors duration-200 hover:opacity-80"
-        />
-        <text x="320" y="310" textAnchor="middle" className="text-xs pointer-events-none font-bold fill-gray-700 dark:fill-gray-300">關東</text>
-      </g>
-
-      {/* Chubu */}
-      <g onClick={() => onRegionClick("chubu")} className="cursor-pointer">
-        <path
-          d="M230,265 L290,268 L295,285 L290,335 L270,360 L240,370 L210,355 L195,330 L200,295 Z"
-          fill={selectedRegion === "chubu" ? regions[3].color : defaultFill}
-          stroke="var(--map-stroke, #fff)"
-          strokeWidth="2"
-          className="transition-colors duration-200 hover:opacity-80"
-        />
-        <text x="245" y="320" textAnchor="middle" className="text-xs pointer-events-none font-bold fill-gray-700 dark:fill-gray-300">中部</text>
-      </g>
-
-      {/* Kinki */}
-      <g onClick={() => onRegionClick("kinki")} className="cursor-pointer">
-        <path
-          d="M195,340 L240,375 L245,410 L230,435 L200,440 L175,425 L165,395 L170,365 Z"
-          fill={selectedRegion === "kinki" ? regions[4].color : defaultFill}
-          stroke="var(--map-stroke, #fff)"
-          strokeWidth="2"
-          className="transition-colors duration-200 hover:opacity-80"
-        />
-        <text x="205" y="400" textAnchor="middle" className="text-xs pointer-events-none font-bold fill-gray-700 dark:fill-gray-300">近畿</text>
-      </g>
-
-      {/* Chugoku */}
-      <g onClick={() => onRegionClick("chugoku")} className="cursor-pointer">
-        <path
-          d="M100,370 L165,365 L170,395 L165,430 L140,445 L110,440 L85,420 L80,395 Z"
-          fill={selectedRegion === "chugoku" ? regions[5].color : defaultFill}
-          stroke="var(--map-stroke, #fff)"
-          strokeWidth="2"
-          className="transition-colors duration-200 hover:opacity-80"
-        />
-        <text x="125" y="410" textAnchor="middle" className="text-xs pointer-events-none font-bold fill-gray-700 dark:fill-gray-300">中國</text>
-      </g>
-
-      {/* Shikoku */}
-      <g onClick={() => onRegionClick("shikoku")} className="cursor-pointer">
-        <path
-          d="M110,450 L160,448 L185,460 L190,485 L170,500 L135,505 L110,490 L100,470 Z"
-          fill={selectedRegion === "shikoku" ? regions[6].color : defaultFill}
-          stroke="var(--map-stroke, #fff)"
-          strokeWidth="2"
-          className="transition-colors duration-200 hover:opacity-80"
-        />
-        <text x="148" y="478" textAnchor="middle" className="text-xs pointer-events-none font-bold fill-gray-700 dark:fill-gray-300">四國</text>
-      </g>
-
-      {/* Kyushu & Okinawa */}
-      <g onClick={() => onRegionClick("kyushu")} className="cursor-pointer">
-        <path
-          d="M55,440 L95,435 L100,465 L95,510 L80,535 L55,540 L35,520 L30,490 L35,460 Z"
-          fill={selectedRegion === "kyushu" ? regions[7].color : defaultFill}
-          stroke="var(--map-stroke, #fff)"
-          strokeWidth="2"
-          className="transition-colors duration-200 hover:opacity-80"
-        />
-        <text x="65" y="490" textAnchor="middle" className="text-xs pointer-events-none font-bold fill-gray-700 dark:fill-gray-300">九州</text>
-        {/* Okinawa */}
-        <path
-          d="M40,600 L65,595 L75,610 L70,630 L50,640 L35,630 L30,615 Z"
-          fill={selectedRegion === "kyushu" ? regions[7].color : defaultFill}
-          stroke="var(--map-stroke, #fff)"
-          strokeWidth="2"
-          className="transition-colors duration-200 hover:opacity-80"
-        />
-        <text x="52" y="620" textAnchor="middle" className="text-xs pointer-events-none font-bold fill-gray-700 dark:fill-gray-300">沖繩</text>
-        <line x1="55" y1="545" x2="52" y2="595" stroke="#9CA3AF" strokeWidth="1" strokeDasharray="4,4" />
-      </g>
-    </svg>
+    <div ref={containerRef} className="relative w-full max-w-md mx-auto">
+      <object
+        data={`${import.meta.env.BASE_URL}jp.svg`}
+        type="image/svg+xml"
+        className="w-full"
+        aria-label="日本地圖"
+      />
+      {tooltip && (
+        <div
+          className="absolute pointer-events-none bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-10"
+          style={{ left: tooltip.x, top: tooltip.y, transform: "translateX(-50%)" }}
+        >
+          {tooltip.text}
+        </div>
+      )}
+    </div>
   );
 }
