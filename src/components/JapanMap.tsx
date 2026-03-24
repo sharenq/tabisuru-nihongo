@@ -116,23 +116,13 @@ export default function JapanMap({ onPrefectureClick }: JapanMapProps) {
     const p = panRef.current;
     svg.setAttribute("viewBox", `${p.x} ${p.y} ${SVG_W / z} ${SVG_H / z}`);
 
-    // Toggle prefecture labels visibility
+    // Toggle prefecture labels visibility based on zoom level
     const prefLabels = svg.querySelector("#pref-labels");
-    const regionLabels = svg.querySelector("#region-labels");
     if (prefLabels) {
       (prefLabels as SVGElement).style.display = z >= PREF_LABEL_ZOOM_THRESHOLD ? "" : "none";
-      // Scale font size inversely with zoom so labels stay readable
-      prefLabels.querySelectorAll("text").forEach((t) => {
-        t.setAttribute("font-size", String(12 / z));
-        t.setAttribute("stroke-width", String(2 / z));
-      });
     }
-    if (regionLabels) {
-      regionLabels.querySelectorAll("text").forEach((t) => {
-        t.setAttribute("font-size", String(18 / z));
-        t.setAttribute("stroke-width", String(3 / z));
-      });
-    }
+    // Region and prefecture labels use fixed SVG font-size,
+    // so they naturally scale up with zoom
   }, []);
 
   const clampPan = useCallback((px: number, py: number, z: number) => {
