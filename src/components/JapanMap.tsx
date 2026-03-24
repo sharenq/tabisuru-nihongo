@@ -61,24 +61,24 @@ const regionLabelPositions: Record<string, { x: number; y: number }> = {
   kyushu: { x: 230, y: 520 },
 };
 
-// Prefecture label positions (from SVG circle centers)
+// Prefecture label positions (adjusted from SVG circle centers to reduce overlap)
 const prefLabelPositions: Record<string, { x: number; y: number }> = {
   hokkaido: { x: 626.5, y: 123.4 },
-  aomori: { x: 562.3, y: 233.6 }, iwate: { x: 585.2, y: 275.2 }, miyagi: { x: 570.6, y: 313.1 },
-  akita: { x: 557.1, y: 268 }, yamagata: { x: 549.5, y: 312.8 }, fukushima: { x: 560.1, y: 357.8 },
-  ibaraki: { x: 553.9, y: 402 }, tochigi: { x: 540.2, y: 381.9 }, gunma: { x: 514.3, y: 389.4 },
-  saitama: { x: 525.2, y: 407.3 }, chiba: { x: 550.4, y: 430.9 }, tokyo: { x: 526.9, y: 419.8 }, kanagawa: { x: 524.2, y: 427.8 },
-  niigata: { x: 511.7, y: 361.1 }, toyama: { x: 464.1, y: 385.6 }, ishikawa: { x: 444.9, y: 395.6 },
-  fukui: { x: 435, y: 409 }, yamanashi: { x: 504, y: 420.8 }, nagano: { x: 487.5, y: 399.3 },
-  gifu: { x: 458.6, y: 419.2 }, shizuoka: { x: 488, y: 443.9 }, aichi: { x: 463.4, y: 442.6 },
-  mie: { x: 439.9, y: 463.4 }, shiga: { x: 431.3, y: 436.6 }, kyoto: { x: 415.8, y: 438.2 },
-  osaka: { x: 414, y: 457.4 }, hyogo: { x: 391.7, y: 440.8 }, nara: { x: 424.6, y: 468 }, wakayama: { x: 410.7, y: 481.6 },
-  tottori: { x: 364.7, y: 429.9 }, shimane: { x: 326, y: 442.9 }, okayama: { x: 362.4, y: 447.5 },
-  hiroshima: { x: 337, y: 456.8 }, yamaguchi: { x: 297.8, y: 469.6 },
-  tokushima: { x: 377.3, y: 482.6 }, kagawa: { x: 368.6, y: 471.3 }, ehime: { x: 337.3, y: 487.6 }, kochi: { x: 348.7, y: 493.7 },
-  fukuoka: { x: 272.8, y: 492.5 }, saga: { x: 254.5, y: 504.2 }, nagasaki: { x: 253.2, y: 517.3 },
-  kumamoto: { x: 278.6, y: 522.3 }, oita: { x: 294.3, y: 512 }, miyazaki: { x: 291.2, y: 539.2 },
-  kagoshima: { x: 266.4, y: 553.1 }, okinawa: { x: 196.1, y: 730.3 },
+  aomori: { x: 562.3, y: 230 }, iwate: { x: 595, y: 270 }, miyagi: { x: 583, y: 315 },
+  akita: { x: 545, y: 260 }, yamagata: { x: 545, y: 300 }, fukushima: { x: 560, y: 350 },
+  ibaraki: { x: 565, y: 395 }, tochigi: { x: 545, y: 375 }, gunma: { x: 515, y: 385 },
+  saitama: { x: 530, y: 400 }, chiba: { x: 558, y: 435 }, tokyo: { x: 538, y: 420 }, kanagawa: { x: 530, y: 440 },
+  niigata: { x: 510, y: 355 }, toyama: { x: 464, y: 380 }, ishikawa: { x: 440, y: 390 },
+  fukui: { x: 430, y: 405 }, yamanashi: { x: 505, y: 425 }, nagano: { x: 487, y: 395 },
+  gifu: { x: 455, y: 415 }, shizuoka: { x: 495, y: 450 }, aichi: { x: 462, y: 447 },
+  mie: { x: 445, y: 468 }, shiga: { x: 428, y: 432 }, kyoto: { x: 410, y: 430 },
+  osaka: { x: 415, y: 460 }, hyogo: { x: 388, y: 440 }, nara: { x: 430, y: 470 }, wakayama: { x: 410, y: 488 },
+  tottori: { x: 365, y: 425 }, shimane: { x: 320, y: 438 }, okayama: { x: 362, y: 450 },
+  hiroshima: { x: 330, y: 458 }, yamaguchi: { x: 292, y: 468 },
+  tokushima: { x: 385, y: 488 }, kagawa: { x: 370, y: 470 }, ehime: { x: 335, y: 492 }, kochi: { x: 355, y: 502 },
+  fukuoka: { x: 268, y: 488 }, saga: { x: 248, y: 500 }, nagasaki: { x: 240, y: 518 },
+  kumamoto: { x: 272, y: 525 }, oita: { x: 298, y: 508 }, miyazaki: { x: 295, y: 542 },
+  kagoshima: { x: 262, y: 558 }, okinawa: { x: 196, y: 730 },
 };
 
 const SVG_W = 1000;
@@ -116,13 +116,16 @@ export default function JapanMap({ onPrefectureClick }: JapanMapProps) {
     const p = panRef.current;
     svg.setAttribute("viewBox", `${p.x} ${p.y} ${SVG_W / z} ${SVG_H / z}`);
 
-    // Toggle prefecture labels visibility based on zoom level
+    // Toggle labels: show prefecture names when zoomed, hide region names to avoid overlap
     const prefLabels = svg.querySelector("#pref-labels");
+    const regionLabels = svg.querySelector("#region-labels");
+    const showPref = z >= PREF_LABEL_ZOOM_THRESHOLD;
     if (prefLabels) {
-      (prefLabels as SVGElement).style.display = z >= PREF_LABEL_ZOOM_THRESHOLD ? "" : "none";
+      (prefLabels as SVGElement).style.display = showPref ? "" : "none";
     }
-    // Region and prefecture labels use fixed SVG font-size,
-    // so they naturally scale up with zoom
+    if (regionLabels) {
+      (regionLabels as SVGElement).style.display = showPref ? "none" : "";
+    }
   }, []);
 
   const clampPan = useCallback((px: number, py: number, z: number) => {
@@ -238,11 +241,11 @@ export default function JapanMap({ onPrefectureClick }: JapanMapProps) {
           label.setAttribute("x", String(pos.x));
           label.setAttribute("y", String(pos.y));
           label.setAttribute("text-anchor", "middle");
-          label.setAttribute("font-size", "12");
+          label.setAttribute("font-size", "7");
           label.setAttribute("font-weight", "600");
           label.setAttribute("fill", "#1a1a1a");
           label.setAttribute("stroke", "#fff");
-          label.setAttribute("stroke-width", "2");
+          label.setAttribute("stroke-width", "1.5");
           label.setAttribute("paint-order", "stroke");
           label.setAttribute("pointer-events", "none");
           label.textContent = prefChineseName[prefId] || "";
