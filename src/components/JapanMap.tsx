@@ -114,7 +114,7 @@ export default function JapanMap({ onPrefectureClick }: JapanMapProps) {
     if (!svg) return;
     const z = zoomRef.current;
     const p = panRef.current;
-    svg.setAttribute("viewBox", `${-p.x} ${-p.y} ${SVG_W / z} ${SVG_H / z}`);
+    svg.setAttribute("viewBox", `${p.x} ${p.y} ${SVG_W / z} ${SVG_H / z}`);
 
     // Toggle prefecture labels visibility
     const prefLabels = svg.querySelector("#pref-labels");
