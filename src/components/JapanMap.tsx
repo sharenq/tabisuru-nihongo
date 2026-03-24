@@ -53,6 +53,12 @@ export default function JapanMap({ onPrefectureClick }: JapanMapProps) {
         const svg = doc.querySelector("svg");
         if (!svg || !svgRef.current) return;
 
+        // Fix viewbox → viewBox (simplemaps uses lowercase which is invalid)
+        const vb = svg.getAttribute("viewbox");
+        if (vb) {
+          svg.removeAttribute("viewbox");
+          svg.setAttribute("viewBox", vb);
+        }
         svg.removeAttribute("width");
         svg.removeAttribute("height");
         svg.style.width = "100%";
