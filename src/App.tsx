@@ -134,9 +134,9 @@ function App() {
         </div>
       </header>
 
-      {/* Map section — full width for easier tapping */}
-      <div className="px-2 py-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 sm:p-4">
+      {/* Map section — full width on mobile, constrained on desktop */}
+      <div className="max-w-2xl mx-auto px-2 py-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-1 sm:p-4">
           <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 text-center">
             日本地圖
           </h2>

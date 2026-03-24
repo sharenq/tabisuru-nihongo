@@ -49,6 +49,18 @@ const regionNames: Record<string, string> = {
   kinki: "近畿", chugoku: "中國", shikoku: "四國", kyushu: "九州",
 };
 
+// Approximate label positions within the 0-1000 x 0-846 viewBox
+const regionLabelPositions: Record<string, { x: number; y: number }> = {
+  hokkaido: { x: 700, y: 130 },
+  tohoku: { x: 600, y: 290 },
+  kanto: { x: 570, y: 410 },
+  chubu: { x: 470, y: 380 },
+  kinki: { x: 395, y: 445 },
+  chugoku: { x: 310, y: 440 },
+  shikoku: { x: 350, y: 510 },
+  kyushu: { x: 230, y: 520 },
+};
+
 interface JapanMapProps {
   onPrefectureClick: (regionId: string, prefId: string) => void;
 }
@@ -91,6 +103,24 @@ export default function JapanMap({ onPrefectureClick }: JapanMapProps) {
           el.setAttribute("data-region", regionId);
           el.style.cursor = "pointer";
           el.style.transition = "opacity 0.2s";
+        }
+
+        // Add region name labels
+        const svgNS = "http://www.w3.org/2000/svg";
+        for (const [regionId, pos] of Object.entries(regionLabelPositions)) {
+          const label = doc.createElementNS(svgNS, "text");
+          label.setAttribute("x", String(pos.x));
+          label.setAttribute("y", String(pos.y));
+          label.setAttribute("text-anchor", "middle");
+          label.setAttribute("font-size", "18");
+          label.setAttribute("font-weight", "bold");
+          label.setAttribute("fill", "#333");
+          label.setAttribute("stroke", "#fff");
+          label.setAttribute("stroke-width", "3");
+          label.setAttribute("paint-order", "stroke");
+          label.setAttribute("pointer-events", "none");
+          label.textContent = regionNames[regionId] || "";
+          svg.appendChild(label);
         }
 
         svgRef.current.innerHTML = "";
