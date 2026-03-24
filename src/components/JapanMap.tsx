@@ -11,6 +11,17 @@ const svgIdToOurId: Record<string, string> = {
   JP40: "fukuoka", JP41: "saga", JP42: "nagasaki", JP43: "kumamoto", JP44: "oita", JP45: "miyazaki", JP46: "kagoshima", JP47: "okinawa",
 };
 
+const prefChineseName: Record<string, string> = {
+  hokkaido: "北海道",
+  aomori: "青森", iwate: "岩手", miyagi: "宮城", akita: "秋田", yamagata: "山形", fukushima: "福島",
+  ibaraki: "茨城", tochigi: "栃木", gunma: "群馬", saitama: "埼玉", chiba: "千葉", tokyo: "東京", kanagawa: "神奈川",
+  niigata: "新潟", toyama: "富山", ishikawa: "石川", fukui: "福井", yamanashi: "山梨", nagano: "長野", gifu: "岐阜", shizuoka: "靜岡", aichi: "愛知",
+  mie: "三重", shiga: "滋賀", kyoto: "京都", osaka: "大阪", hyogo: "兵庫", nara: "奈良", wakayama: "和歌山",
+  tottori: "鳥取", shimane: "島根", okayama: "岡山", hiroshima: "廣島", yamaguchi: "山口",
+  tokushima: "德島", kagawa: "香川", ehime: "愛媛", kochi: "高知",
+  fukuoka: "福岡", saga: "佐賀", nagasaki: "長崎", kumamoto: "熊本", oita: "大分", miyazaki: "宮崎", kagoshima: "鹿兒島", okinawa: "沖繩",
+};
+
 const prefToRegion: Record<string, string> = {
   hokkaido: "hokkaido",
   aomori: "tohoku", iwate: "tohoku", miyagi: "tohoku", akita: "tohoku", yamagata: "tohoku", fukushima: "tohoku",
@@ -31,6 +42,11 @@ const regionColors: Record<string, string> = {
   chugoku: "#10B981",
   shikoku: "#6366F1",
   kyushu: "#F97316",
+};
+
+const regionNames: Record<string, string> = {
+  hokkaido: "北海道", tohoku: "東北", kanto: "關東", chubu: "中部",
+  kinki: "近畿", chugoku: "中國", shikoku: "四國", kyushu: "九州",
 };
 
 interface JapanMapProps {
@@ -97,19 +113,21 @@ export default function JapanMap({ onPrefectureClick }: JapanMapProps) {
     const container = svgRef.current;
     if (!wrapper || !container) return;
 
-    // Reset all
     container.querySelectorAll("[data-pref]").forEach((el) => {
       (el as SVGElement).setAttribute("opacity", "0.7");
     });
 
     if (target) {
       (target as SVGElement).setAttribute("opacity", "1");
-      const name = target.getAttribute("name") || "";
+      const prefId = target.getAttribute("data-pref") || "";
+      const regionId = target.getAttribute("data-region") || "";
+      const zhName = prefChineseName[prefId] || prefId;
+      const regionZh = regionNames[regionId] || "";
       const rect = wrapper.getBoundingClientRect();
       setTooltip({
-        text: name,
+        text: `${zhName}（${regionZh}）`,
         x: e.clientX - rect.left,
-        y: e.clientY - rect.top - 30,
+        y: e.clientY - rect.top - 35,
       });
     } else {
       setTooltip(null);
@@ -124,7 +142,7 @@ export default function JapanMap({ onPrefectureClick }: JapanMapProps) {
   }, []);
 
   return (
-    <div ref={wrapperRef} className="relative w-full max-w-md mx-auto">
+    <div ref={wrapperRef} className="relative w-full mx-auto">
       <div
         ref={svgRef}
         onClick={handleClick}
@@ -134,7 +152,7 @@ export default function JapanMap({ onPrefectureClick }: JapanMapProps) {
       />
       {tooltip && (
         <div
-          className="absolute pointer-events-none bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-10"
+          className="absolute pointer-events-none bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-sm font-medium px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap z-10"
           style={{ left: tooltip.x, top: tooltip.y, transform: "translateX(-50%)" }}
         >
           {tooltip.text}

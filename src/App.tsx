@@ -134,7 +134,7 @@ function App() {
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
           <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 text-center">
             日本地圖
