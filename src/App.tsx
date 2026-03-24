@@ -134,8 +134,9 @@ function App() {
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
+      {/* Map section — full width for easier tapping */}
+      <div className="px-2 py-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 sm:p-4">
           <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 text-center">
             日本地圖
           </h2>
@@ -145,7 +146,10 @@ function App() {
             }
           />
         </div>
+      </div>
 
+      {/* Region list — narrower for readability */}
+      <div className="max-w-lg mx-auto px-4 pb-6">
         <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">全部地區</h2>
         <RegionList
           onRegionClick={(id) => setView({ type: "region", id })}
