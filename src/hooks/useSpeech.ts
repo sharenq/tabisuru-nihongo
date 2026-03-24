@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 
+const audioBaseUrl = `${import.meta.env.BASE_URL}audio/`;
+
 let manifestCache: Record<string, string> | null = null;
 let manifestLoaded = false;
 
 async function loadManifest(): Promise<Record<string, string>> {
   if (manifestCache) return manifestCache;
   try {
-    const res = await fetch("/audio/manifest.json");
+    const res = await fetch(`${audioBaseUrl}manifest.json`);
     if (res.ok) {
       manifestCache = await res.json();
       return manifestCache!;
@@ -30,7 +32,7 @@ export function useSpeech() {
       const audioFile = manifest[text];
       if (audioFile) {
         // Use pre-generated Edge TTS audio
-        const audio = new Audio(`/audio/${audioFile}`);
+        const audio = new Audio(`${audioBaseUrl}${audioFile}`);
         audio.playbackRate = 0.9;
         audio.play().catch(() => {
           // Fallback to Web Speech API
