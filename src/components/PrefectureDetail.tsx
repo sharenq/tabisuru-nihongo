@@ -3,6 +3,7 @@ import type { Prefecture } from "../data/regions";
 import { categories } from "../data/regions";
 import WordCard from "./WordCard";
 import SearchBar from "./SearchBar";
+import TravelGuideSection from "./TravelGuideSection";
 import { useSpeech } from "../hooks/useSpeech";
 
 interface PrefectureDetailProps {
@@ -94,6 +95,13 @@ export default function PrefectureDetail({
             ))}
           </div>
         </div>
+
+        {/* Travel Guide */}
+        {prefecture.travelGuide && (
+          <div className="mb-4">
+            <TravelGuideSection travelGuide={prefecture.travelGuide} />
+          </div>
+        )}
 
         {/* Quiz section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-4">

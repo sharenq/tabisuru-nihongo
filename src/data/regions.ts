@@ -1,9 +1,18 @@
+import { applyTravelGuides } from "./travel-guides";
+
 export interface Word {
   japanese: string;
   hiragana: string;
   romaji: string;
   chinese: string;
   category: string;
+}
+
+export interface TravelGuide {
+  transport: string[];
+  mustEat: string[];
+  mustVisit: string[];
+  etiquette: string[];
 }
 
 export interface Prefecture {
@@ -13,6 +22,7 @@ export interface Prefecture {
   description: string;
   features: string[];
   words: Word[];
+  travelGuide?: TravelGuide;
 }
 
 export interface Region {
@@ -25,7 +35,7 @@ export interface Region {
   prefectures: Prefecture[];
 }
 
-export const regions: Region[] = [
+const rawRegions: Region[] = [
   {
     id: "hokkaido",
     name: "北海道",
@@ -980,6 +990,8 @@ export const regions: Region[] = [
     ],
   },
 ];
+
+export const regions: Region[] = applyTravelGuides(rawRegions);
 
 export const categories = [
   { id: "all", name: "全部", icon: "📋" },
