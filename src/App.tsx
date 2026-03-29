@@ -4,6 +4,8 @@ import RegionDetail from "./components/RegionDetail";
 import PrefectureDetail from "./components/PrefectureDetail";
 import RegionList from "./components/RegionList";
 import Quiz from "./components/Quiz";
+import CurrencyCalculator from "./components/CurrencyCalculator";
+import Rankings from "./components/Rankings";
 import { regions } from "./data/regions";
 import { useProgress } from "./hooks/useProgress";
 import { useDarkMode } from "./hooks/useDarkMode";
@@ -12,7 +14,8 @@ type View =
   | { type: "home" }
   | { type: "region"; id: string }
   | { type: "prefecture"; regionId: string; prefId: string }
-  | { type: "quiz"; regionId: string; prefId: string };
+  | { type: "quiz"; regionId: string; prefId: string }
+  | { type: "rankings" };
 
 function getAllWords() {
   return regions.flatMap((r) => r.prefectures.flatMap((p) => p.words));
@@ -71,6 +74,17 @@ function App() {
     );
   }
 
+  if (view.type === "rankings") {
+    return (
+      <Rankings
+        onBack={() => setView({ type: "home" })}
+        onPrefectureClick={(regionId, prefId) =>
+          setView({ type: "prefecture", regionId, prefId })
+        }
+      />
+    );
+  }
+
   if (view.type === "region") {
     const region = regions.find((r) => r.id === view.id);
     if (!region) return null;
@@ -97,7 +111,7 @@ function App() {
               旅する日本語
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              點擊地圖或選擇地區，學習旅遊日文
+              你的日本旅遊隨身工具
             </p>
           </div>
           <button
@@ -148,16 +162,33 @@ function App() {
         </div>
       </div>
 
-      {/* Region list — narrower for readability */}
+      {/* Tools section */}
+      <div className="max-w-lg mx-auto px-4 py-2 flex gap-2">
+        <button
+          onClick={() => setView({ type: "rankings" })}
+          className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 text-left hover:shadow-md transition-shadow"
+        >
+          <span className="text-lg">🏆</span>
+          <span className="ml-2 text-sm font-semibold text-gray-700 dark:text-gray-200">人氣排行</span>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">最受歡迎的旅遊地區</p>
+        </button>
+      </div>
+
+      {/* Currency Calculator */}
+      <div className="max-w-lg mx-auto px-4 py-2">
+        <CurrencyCalculator />
+      </div>
+
+      {/* Region list */}
       <div className="max-w-lg mx-auto px-4 pb-6">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">全部地區</h2>
+        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 mt-2">全部地區</h2>
         <RegionList
           onRegionClick={(id) => setView({ type: "region", id })}
           getRegionProgress={getRegionProgress}
         />
 
         <footer className="text-center text-xs text-gray-400 mt-8 pb-6">
-          旅する日本語 — 邊旅行邊學日文
+          旅する日本語 — 你的日本旅遊隨身工具
         </footer>
       </div>
     </div>
