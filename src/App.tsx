@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import JapanMap from "./components/JapanMap";
 import RegionDetail from "./components/RegionDetail";
 import PrefectureDetail from "./components/PrefectureDetail";
@@ -22,7 +22,27 @@ function getAllWords() {
 }
 
 function App() {
-  const [view, setView] = useState<View>({ type: "home" });
+  const [view, setViewState] = useState<View>({ type: "home" });
+
+  const setView = useCallback((newView: View) => {
+    setViewState(newView);
+    if (newView.type !== "home") {
+      window.history.pushState(newView, "", null);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state) {
+        setViewState(e.state as View);
+      } else {
+        setViewState({ type: "home" });
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   const {
     toggleLearned,
     isLearned,
